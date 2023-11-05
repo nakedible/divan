@@ -1,4 +1,4 @@
-use std::{fmt, num::NonZeroUsize, time::Duration};
+use std::{fmt, num::{NonZeroU64, NonZeroUsize}, time::Duration};
 
 use clap::ColorChoice;
 use regex::Regex;
@@ -17,6 +17,7 @@ use crate::{
 pub struct Divan {
     action: Action,
     timer: TimerKind,
+    tsc_frequency: Option<NonZeroU64>,
     reverse_sort: bool,
     sorting_attr: SortingAttr,
     color: ColorChoice,
@@ -133,7 +134,7 @@ impl Divan {
             TimerKind::Os => Timer::Os,
 
             TimerKind::Tsc => {
-                match Timer::get_tsc() {
+                match Timer::get_tsc(self.tsc_frequency) {
                     Ok(tsc) => tsc,
                     Err(error) => {
                         eprintln!("warning: CPU timestamp counter is unavailable ({error}), defaulting to OS");
@@ -385,6 +386,10 @@ impl Divan {
 
         if let Some(&timer) = matches.get_one("timer") {
             self.timer = timer;
+        }
+
+        if let Some(&tsc_frequency) = matches.get_one("tsc-frequency") {
+            self.tsc_frequency = NonZeroU64::new(tsc_frequency);
         }
 
         if let Some(&sorting_attr) = matches.get_one("sortr") {

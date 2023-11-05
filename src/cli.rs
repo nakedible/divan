@@ -90,6 +90,13 @@ pub(crate) fn command() -> Command {
                 .value_parser(value_parser!(TimerKind)),
         )
         .arg(
+            option("tsc-frequency")
+                .env("DIVAN_TSC_FREQUENCY")
+                .value_name("Hz")
+                .help("Override CPU frequence measurement for the 'tsc' timer")
+                .value_parser(value_parser!(u64)),
+        )
+        .arg(
             option("sample-count")
                 .env("DIVAN_SAMPLE_COUNT")
                 .value_name("N")

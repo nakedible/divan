@@ -33,8 +33,9 @@ impl Timer {
 
     /// Attempts to get the CPU timestamp counter.
     #[inline]
-    pub fn get_tsc() -> Result<Self, TscUnavailable> {
-        Ok(Self::Tsc { frequency: TscTimestamp::frequency()? })
+    pub fn get_tsc(tsc_frequency: Option<NonZeroU64>) -> Result<Self, TscUnavailable> {
+        let freq = TscTimestamp::frequency()?;
+        Ok(Self::Tsc { frequency: tsc_frequency.unwrap_or(freq) })
     }
 
     #[inline]
