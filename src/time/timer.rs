@@ -34,7 +34,8 @@ impl Timer {
     /// Attempts to get the CPU timestamp counter.
     #[inline]
     pub fn get_tsc() -> Result<Self, TscUnavailable> {
-        Ok(Self::Tsc { frequency: TscTimestamp::frequency()? })
+        let _ = TscTimestamp::frequency()?;
+        Ok(Self::Tsc { frequency: NonZeroU64::new(1_000_000_000).unwrap() })
     }
 
     #[inline]
@@ -69,7 +70,7 @@ impl Timer {
         let mut delay_len: usize = 0;
 
         loop {
-            for _ in 0..100 {
+            for i in 0..10000 {
                 // Use `UntaggedTimestamp` to minimize overhead.
                 let sample_start: UntaggedTimestamp;
                 let sample_end: UntaggedTimestamp;
@@ -97,6 +98,7 @@ impl Timer {
 
                 // Discard sample if irrelevant.
                 if sample.is_zero() {
+                    delay_len = delay_len.saturating_add(1);
                     continue;
                 }
 
@@ -104,7 +106,7 @@ impl Timer {
                     Ordering::Greater => {
                         // If we already delayed a lot, and not hit the seen
                         // count threshold, then use current minimum.
-                        if delay_len > 100 {
+                        if delay_len > 5000 {
                             return min_sample;
                         }
                     }
@@ -113,7 +115,7 @@ impl Timer {
 
                         // If we've seen this min 100 times, we have high
                         // confidence this is the smallest duration.
-                        if seen_count >= 100 {
+                        if seen_count >= 1000 {
                             return min_sample;
                         }
                     }
@@ -123,8 +125,6 @@ impl Timer {
                     }
                 }
             }
-
-            delay_len = delay_len.saturating_add(1);
         }
     }
 
@@ -132,7 +132,7 @@ impl Timer {
     pub fn measure_sample_loop_overhead(self) -> FineDuration {
         let timer_kind = self.kind();
 
-        let sample_count: usize = 100;
+        let sample_count: usize = 1000;
         let sample_size: usize = 10_000;
 
         // The minimum non-zero sample.

@@ -150,11 +150,7 @@ impl Divan {
         let shared_context = SharedContext {
             action,
             timer,
-            bench_overhead: if action.is_bench() {
-                timer.measure_sample_loop_overhead()
-            } else {
-                FineDuration::default()
-            },
+            bench_overhead: FineDuration::default(),
         };
 
         let column_widths = if action.is_bench() {
