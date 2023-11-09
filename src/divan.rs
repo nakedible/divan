@@ -143,18 +143,21 @@ impl Divan {
             }
         };
 
+        let bench_overhead = if action.is_bench() {
+            timer.measure_sample_loop_overhead()
+        } else {
+            FineDuration::default()
+        };
+
         if action.is_bench() {
             eprintln!("Timer precision: {}", timer.precision());
+            eprintln!("Sample loop overhead: {}", bench_overhead);
         }
 
         let shared_context = SharedContext {
             action,
             timer,
-            bench_overhead: if action.is_bench() {
-                timer.measure_sample_loop_overhead()
-            } else {
-                FineDuration::default()
-            },
+            bench_overhead,
         };
 
         let column_widths = if action.is_bench() {
